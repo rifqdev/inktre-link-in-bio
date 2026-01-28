@@ -3,8 +3,10 @@ import Credentials from 'next-auth/providers/credentials';
 import { compare } from 'bcryptjs';
 import { prisma } from './prisma';
 import { loginSchema } from './validations';
+import { authConfig } from './auth.config';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
@@ -58,11 +60,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session;
     },
-  },
-  pages: {
-    signIn: '/login',
-  },
-  session: {
-    strategy: 'jwt',
   },
 });
