@@ -3,7 +3,7 @@
  * Custom hook for data fetching with loading and error states
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { handleApiError } from '@/lib/api/errors';
 import type { ApiError } from '@/lib/api/errors';
 
@@ -21,10 +21,14 @@ export function useApiQuery<T>(
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiError | null>(null);
+  const isInitialLoad = useRef(true);
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
+      // Only set loading to true on initial load
+      if (isInitialLoad.current) {
+        setLoading(true);
+      }
       setError(null);
       const result = await queryFn();
       setData(result);
@@ -33,6 +37,7 @@ export function useApiQuery<T>(
       setError(apiError);
     } finally {
       setLoading(false);
+      isInitialLoad.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);

@@ -34,7 +34,7 @@ export default function DashboardPage() {
     [status]
   );
 
-  const { data: user = null, loading: userLoading } = useApiQuery(
+  const { data: user = null, loading: userLoading, refetch: refetchProfile } = useApiQuery(
     () => profileService.getProfile(),
     [status]
   );
@@ -139,7 +139,7 @@ export default function DashboardPage() {
       () => profileService.updateProfile(data),
       { successMessage: 'Profile updated successfully' }
     );
-    refetchLinks();
+    refetchProfile();
     refreshPreview();
   }
 
@@ -148,7 +148,7 @@ export default function DashboardPage() {
       () => profileService.updateProfile({ avatar: avatarUrl || undefined }),
       { successMessage: 'Avatar updated successfully' }
     );
-    refetchLinks();
+    refetchProfile();
     refreshPreview();
   }
 
