@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
-import { Plus, Layout, LogOut, Users, ChevronLeft } from 'lucide-react';
+import { LogOut, Users, ChevronLeft } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { PreviewPanel } from '@/components/dashboard/PreviewPanel';

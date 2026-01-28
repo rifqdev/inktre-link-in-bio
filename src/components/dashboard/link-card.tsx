@@ -1,14 +1,11 @@
 'use client';
 
 import {
-  Link2,
-  ExternalLink,
   Pencil,
   Trash2,
   BarChart2,
   GripVertical,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface LinkCardProps {
   link: {

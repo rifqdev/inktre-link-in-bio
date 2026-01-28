@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { updateLinkSchema } from '@/lib/validations';
 
 // GET /api/links/[id] - Get a single link
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     const { id } = await params;
@@ -76,7 +76,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 // DELETE /api/links/[id] - Delete a link
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     const { id } = await params;

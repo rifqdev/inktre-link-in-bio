@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import AuthLayout, { AuthForm } from '@/components/auth/AuthLayout';
 import { authService } from '@/services/auth.service';
 import { useApi } from '@/hooks';

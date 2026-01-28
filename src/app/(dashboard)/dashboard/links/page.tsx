@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Plus } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -9,15 +8,14 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { SortableLinkCardDetailed } from '@/components/dashboard/SortableLinkCardDetailed';
 import { LinkForm } from '@/components/dashboard/link-form';
 import Image from 'next/image';
-import { Link, User } from '@/types/dashboard';
+import { Link } from '@/types/dashboard';
 import { linksService } from '@/services/links.service';
 import { profileService } from '@/services/profile.service';
 import { useApiQuery, useApi } from '@/hooks';
 import type { CreateLinkInput, UpdateLinkInput } from '@/lib/api/types';
 
 export default function LinksPage() {
-  const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<Link | null>(null);
 

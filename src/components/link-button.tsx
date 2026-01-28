@@ -12,7 +12,7 @@ interface LinkButtonProps {
   icon?: string | null;
 }
 
-export function LinkButton({ id, title, url, themeColor, icon }: LinkButtonProps) {
+export function LinkButton({ id, title, url, icon }: LinkButtonProps) {
   async function handleClick() {
     // Track click using service
     await analyticsService.trackClick(id);
@@ -20,7 +20,6 @@ export function LinkButton({ id, title, url, themeColor, icon }: LinkButtonProps
     // Open in new tab
     window.open(url, '_blank');
   }
-  console.log(icon)
 
   return (
     <button
