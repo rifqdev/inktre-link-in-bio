@@ -2,6 +2,7 @@
 
 import { MoreHorizontal } from 'lucide-react';
 import { DynamicIcon } from '@/components/icons/IconMap';
+import { analyticsService } from '@/services/analytics.service';
 
 interface LinkButtonProps {
   id: string;
@@ -13,12 +14,8 @@ interface LinkButtonProps {
 
 export function LinkButton({ id, title, url, themeColor, icon }: LinkButtonProps) {
   async function handleClick() {
-    // Track click
-    await fetch('/api/click', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ linkId: id }),
-    });
+    // Track click using service
+    await analyticsService.trackClick(id);
 
     // Open in new tab
     window.open(url, '_blank');

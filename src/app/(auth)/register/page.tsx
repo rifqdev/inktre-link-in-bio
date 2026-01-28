@@ -4,42 +4,34 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthLayout, { AuthForm } from '@/components/auth/AuthLayout';
+import { authService } from '@/services/auth.service';
+import { useApi } from '@/hooks';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { execute: registerMutation, loading } = useApi();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const slug = formData.get('slug') as string;
+    const data = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+      slug: formData.get('slug') as string,
+    };
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, slug }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Registration failed');
-        return;
-      }
-
+      await registerMutation(
+        () => authService.register(data),
+        { successMessage: 'Account created successfully!' }
+      );
       router.push('/login?registered=true');
-    } catch (err) {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+    } catch (err: any) {
+      setError(err.message || 'Registration failed');
     }
   }
 

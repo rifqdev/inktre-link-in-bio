@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { MobilePreviewContainer } from '@/components/profile/MobilePreviewContainer';
 import { ShareableLink } from '@/components/dashboard/ShareableLink';
+import { profileService } from '@/services/profile.service';
+import { useApiQuery } from '@/hooks';
 
 interface User {
   name: string;
@@ -30,43 +31,13 @@ interface PreviewPanelProps {
 }
 
 export function PreviewPanel({ slug, refreshKey }: PreviewPanelProps) {
-  const [data, setData] = useState<PreviewData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Only fetch if slug exists
+  const shouldFetch = !!slug;
 
-  useEffect(() => {
-    if (!slug) return;
-
-    async function fetchPreviewData() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(`/api/profile/${slug}`);
-        if (response.ok) {
-          const previewData = await response.json();
-          setData({
-            user: {
-              name: previewData.name,
-              avatar: previewData.avatar,
-              bio: previewData.bio,
-              themeColor: previewData.themeColor,
-            },
-            links: previewData.links,
-          });
-        } else {
-          setError('Failed to load preview');
-        }
-      } catch (err) {
-        console.error('Error fetching preview data:', err);
-        setError('Failed to load preview');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchPreviewData();
-  }, [slug, refreshKey]);
+  const { data: profileData, loading, error } = useApiQuery(
+    () => profileService.getProfileBySlug(slug!),
+    [slug, refreshKey]
+  );
 
   if (!slug) {
     return (
@@ -76,7 +47,7 @@ export function PreviewPanel({ slug, refreshKey }: PreviewPanelProps) {
     );
   }
 
-  if (loading) {
+  if (shouldFetch && loading) {
     return (
       <div className="w-full h-full flex items-center justify-center p-6 bg-gray-100">
         <div className="animate-pulse flex flex-col items-center gap-4">
@@ -88,17 +59,23 @@ export function PreviewPanel({ slug, refreshKey }: PreviewPanelProps) {
     );
   }
 
-  if (error) {
+  if (error || !profileData) {
     return (
       <div className="w-full h-full flex items-center justify-center p-6 bg-gray-100">
-        <p className="text-red-500 text-sm">{error}</p>
+        <p className="text-red-500 text-sm">{error?.message || 'Failed to load preview'}</p>
       </div>
     );
   }
 
-  if (!data) {
-    return null;
-  }
+  const data: PreviewData = {
+    user: {
+      name: (profileData as any).name,
+      avatar: (profileData as any).avatar,
+      bio: (profileData as any).bio,
+      themeColor: (profileData as any).themeColor,
+    },
+    links: (profileData as any).links || [],
+  };
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-gray-100">

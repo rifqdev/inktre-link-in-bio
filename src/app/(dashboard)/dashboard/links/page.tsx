@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Plus } from 'lucide-react';
@@ -10,16 +10,34 @@ import { SortableLinkCardDetailed } from '@/components/dashboard/SortableLinkCar
 import { LinkForm } from '@/components/dashboard/link-form';
 import Image from 'next/image';
 import { Link, User } from '@/types/dashboard';
+import { linksService } from '@/services/links.service';
+import { profileService } from '@/services/profile.service';
+import { useApiQuery, useApi } from '@/hooks';
+import type { CreateLinkInput, UpdateLinkInput } from '@/lib/api/types';
 
 export default function LinksPage() {
   const router = useRouter();
-  const { data: session } = useSession();
-  const [links, setLinks] = useState<Link[]>([]);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<Link | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+
+  // Fetch links and profile using useApiQuery
+  const { data: links = [], loading: linksLoading, refetch: refetchLinks } = useApiQuery(
+    () => linksService.getLinks(),
+    [status]
+  );
+
+  const { data: user = null, loading: userLoading } = useApiQuery(
+    () => profileService.getProfile(),
+    [status]
+  );
+
+  // Mutation hooks
+  const { execute: createLinkMutation, loading: creating } = useApi();
+  const { execute: updateLinkMutation, loading: updating } = useApi();
+  const { execute: toggleLinkMutation } = useApi();
+  const { execute: deleteLinkMutation } = useApi();
+  const { execute: reorderLinksMutation } = useApi();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -28,145 +46,74 @@ export default function LinksPage() {
     })
   );
 
-  useEffect(() => {
-    fetchLinks();
-    fetchUser();
-  }, []);
-
-  async function fetchLinks() {
-    try {
-      const response = await fetch('/api/links');
-      if (response.ok) {
-        const data = await response.json();
-        setLinks(data);
-      }
-    } catch (error) {
-      console.error('Error fetching links:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchUser() {
-    try {
-      const response = await fetch('/api/profile');
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data);
-      }
-    } catch (error) {
-      console.error('Error fetching user:', error);
-    }
+  function refreshPreview() {
+    window.dispatchEvent(new CustomEvent('preview-update'));
   }
 
   async function handleCreateLink(data: { title: string; url: string }) {
-    setSubmitting(true);
-    try {
-      const response = await fetch('/api/links', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, order: links.length }),
-      });
-
-      if (response.ok) {
-        await fetchLinks();
-        setIsFormOpen(false);
-        window.dispatchEvent(new CustomEvent('preview-update'));
-      }
-    } catch (error) {
-      console.error('Error creating link:', error);
-    } finally {
-      setSubmitting(false);
-    }
+    const linkData: CreateLinkInput = { ...data, active: true, order: links?.length || 0 };
+    await createLinkMutation(
+      () => linksService.createLink(linkData),
+      { successMessage: 'Link created successfully' }
+    );
+    refetchLinks();
+    setIsFormOpen(false);
+    refreshPreview();
   }
 
   async function handleUpdateLink(data: { title: string; url: string }) {
     if (!editingLink) return;
 
-    setSubmitting(true);
-    try {
-      const response = await fetch(`/api/links/${editingLink.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (response.ok) {
-        await fetchLinks();
-        setIsFormOpen(false);
-        setEditingLink(null);
-        window.dispatchEvent(new CustomEvent('preview-update'));
-      }
-    } catch (error) {
-      console.error('Error updating link:', error);
-    } finally {
-      setSubmitting(false);
-    }
+    const linkData: UpdateLinkInput = data;
+    await updateLinkMutation(
+      () => linksService.updateLink(editingLink.id, linkData),
+      { successMessage: 'Link updated successfully' }
+    );
+    refetchLinks();
+    setIsFormOpen(false);
+    setEditingLink(null);
+    refreshPreview();
   }
 
   async function handleToggleLink(id: string) {
-    try {
-      const response = await fetch(`/api/links/${id}/toggle`, {
-        method: 'PATCH',
-      });
-
-      if (response.ok) {
-        await fetchLinks();
-        window.dispatchEvent(new CustomEvent('preview-update'));
-      }
-    } catch (error) {
-      console.error('Error toggling link:', error);
-    }
+    await toggleLinkMutation(() => linksService.toggleLink(id));
+    refetchLinks();
+    refreshPreview();
   }
 
   async function handleDeleteLink(id: string) {
     if (!confirm('Are you sure you want to delete this link?')) return;
 
-    try {
-      const response = await fetch(`/api/links/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        await fetchLinks();
-        window.dispatchEvent(new CustomEvent('preview-update'));
-      }
-    } catch (error) {
-      console.error('Error deleting link:', error);
-    }
+    await deleteLinkMutation(
+      () => linksService.deleteLink(id),
+      { successMessage: 'Link deleted successfully' }
+    );
+    refetchLinks();
+    refreshPreview();
   }
 
   async function handleDragEnd(event: any) {
     const { active, over } = event;
 
-    if (over && active.id !== over.id) {
-      const oldIndex = links.findIndex((item) => item.id === active.id);
-      const newIndex = links.findIndex((item) => item.id === over.id);
+    if (over && active.id !== over.id && links) {
+      const oldIndex = links.findIndex((item) => (item as any).id === active.id);
+      const newIndex = links.findIndex((item) => (item as any).id === over.id);
 
       const newLinks = arrayMove(links, oldIndex, newIndex).map((link, index) => ({
         ...link,
         order: index,
       }));
 
-      setLinks(newLinks);
-
       try {
-        const response = await fetch('/api/links/reorder', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            links: newLinks.map((link) => ({ id: link.id, order: link.order })),
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to reorder links');
-        }
-
-        window.dispatchEvent(new CustomEvent('preview-update'));
-      } catch (error) {
-        console.error('Error reordering links:', error);
-        setLinks(links);
+        await reorderLinksMutation(() =>
+          linksService.reorderLinks({
+            links: newLinks.map((link) => ({ id: (link as any).id, order: link.order })),
+          })
+        );
+        refetchLinks();
+        refreshPreview();
+      } catch {
+        // Error will be handled by useApi hook
       }
     }
   }
@@ -181,6 +128,8 @@ export default function LinksPage() {
     setIsFormOpen(true);
   }
 
+  const loading = linksLoading || userLoading;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -194,43 +143,41 @@ export default function LinksPage() {
       <main className="max-w-2xl mx-auto px-4 pt-6">
         {/* Profile Section */}
         <div className="flex items-start gap-4 mb-8">
-          {user?.avatar ? (
+          {(user as any)?.avatar ? (
             <Image
-              src={user.avatar}
-              alt={user.name}
-              width={64}
-              height={64}
-              className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm"
+              src={(user as any).avatar}
+              alt={(user as any).name}
+              width={80}
+              height={80}
+              className="rounded-full object-cover border-2 border-white shadow-md"
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-teal-900 flex items-center justify-center text-white text-2xl font-bold border-2 border-white shadow-sm">
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            <div className="w-20 h-20 rounded-full bg-linear-to-br from-[#8129D9] to-purple-600 flex items-center justify-center text-white text-2xl font-bold border-2 border-white shadow-md">
+              {(user as any)?.name?.charAt(0).toUpperCase() || 'R'}
             </div>
           )}
           <div className="flex-1">
-            <h2 className="text-lg font-bold text-gray-900">{user?.name || session?.user?.name}</h2>
-            <p className="text-gray-600 text-sm">
-              {user?.bio || 'Add a bio...'}
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900">{(user as any)?.name || 'User'}</h1>
+            <p className="text-gray-500 text-sm">linktr.ee/{(user as any)?.slug || 'username'}</p>
           </div>
         </div>
 
-        {/* Links List */}
+        {/* Links Section */}
         <div className="space-y-4">
-          {links.length === 0 ? (
+          {!links || links.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500">No links yet. Add your first link!</p>
             </div>
           ) : (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={links.map((l) => l.id)} strategy={verticalListSortingStrategy}>
+              <SortableContext items={links.map((l) => (l as any).id)} strategy={verticalListSortingStrategy}>
                 {links.map((link) => (
                   <SortableLinkCardDetailed
-                    key={link.id}
-                    link={link}
-                    onToggle={() => handleToggleLink(link.id)}
-                    onEdit={() => openEditModal(link)}
-                    onDelete={() => handleDeleteLink(link.id)}
+                    key={(link as any).id}
+                    link={link as any}
+                    onToggle={() => handleToggleLink((link as any).id)}
+                    onEdit={() => openEditModal(link as any)}
+                    onDelete={() => handleDeleteLink((link as any).id)}
                   />
                 ))}
               </SortableContext>
@@ -239,8 +186,8 @@ export default function LinksPage() {
         </div>
       </main>
 
-      {/* Floating Bottom Navigation */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-2xl border px-2 py-2 flex items-center gap-1 min-w-[320px] justify-around z-40">
+      {/* Floating Bottom Navigation - Mobile Only */}
+      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-2xl border px-2 py-2 flex items-center gap-1 min-w-[320px] justify-around z-40">
         <button
           onClick={openCreateModal}
           className="flex flex-col items-center gap-1 px-4 py-1 text-gray-800 hover:bg-gray-100 rounded-full transition-colors"
@@ -259,7 +206,7 @@ export default function LinksPage() {
         }}
         onSubmit={editingLink ? handleUpdateLink : handleCreateLink}
         initialData={editingLink || undefined}
-        isLoading={submitting}
+        isLoading={creating || updating}
       />
     </div>
   );

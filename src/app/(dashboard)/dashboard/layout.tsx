@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation';
 import { PreviewPanel } from '@/components/dashboard/PreviewPanel';
 import { MobileBottomNavigation } from '@/components/dashboard/MobileBottomNavigation';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
+import { profileService } from '@/services/profile.service';
+import { useApiQuery } from '@/hooks';
 
 export default function DashboardLayout({
   children,
@@ -18,6 +20,15 @@ export default function DashboardLayout({
   const { data: session } = useSession();
   const pathname = usePathname();
   const router = useRouter();
+
+  // Fetch current user profile to get slug
+  const { data: userProfile } = useApiQuery(
+    () => profileService.getProfile(),
+    []
+  );
+
+  // Get slug from profile (more reliable than session)
+  const slug = (userProfile as any)?.slug;
 
   // Detect if we're on mobile/tablet (< 1024px)
   const isMobileOrTablet = useMediaQuery('(max-width: 1024px)');
@@ -128,7 +139,7 @@ export default function DashboardLayout({
         {/* Preview Panel - Desktop Only */}
         {!isMobileOrTablet && (
           <div className="w-[40%] flex">
-            <PreviewPanel slug={(session?.user as any)?.slug} refreshKey={previewRefreshKey} />
+            <PreviewPanel slug={slug} refreshKey={previewRefreshKey} />
           </div>
         )}
       </main>
