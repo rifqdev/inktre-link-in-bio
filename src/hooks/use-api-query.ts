@@ -16,7 +16,7 @@ interface UseApiQueryReturn<T> {
 
 export function useApiQuery<T>(
   queryFn: () => Promise<T>,
-  deps: any[] = []
+  deps: unknown[] = []
 ): UseApiQueryReturn<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +34,7 @@ export function useApiQuery<T>(
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   useEffect(() => {

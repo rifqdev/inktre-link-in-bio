@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export default function AuthBanner() {
   return (
     <div className="hidden md:flex w-1/2 bg-custom-blue relative overflow-hidden items-center justify-center p-12">
@@ -10,12 +12,24 @@ export default function AuthBanner() {
         <div className="relative w-full max-w-lg">
           {/* Gambar Utama (Wanita) */}
           <div className="relative z-20 rounded-3xl overflow-hidden shadow-2xl">
-            <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800" alt="Gaya Hidup" className="w-full h-auto" />
+            <Image
+              src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800"
+              alt="Gaya Hidup"
+              width={800}
+              height={600}
+              className="w-full h-auto"
+            />
           </div>
 
           {/* Floating Elements (Simulasi) */}
           <div className="absolute -top-10 -left-10 w-48 h-32 bg-white/20 backdrop-blur-md rounded-2xl z-30 overflow-hidden border border-white/30 p-2">
-            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=60&w=300" alt="Video" className="rounded-lg h-full w-full object-cover" />
+            <Image
+              src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=60&w=300"
+              alt="Video"
+              width={300}
+              height={200}
+              className="rounded-lg h-full w-full object-cover"
+            />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="bg-white rounded-full p-2">
                 <svg className="w-4 h-4 text-black fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -24,7 +38,13 @@ export default function AuthBanner() {
           </div>
 
           <div className="absolute -bottom-10 -right-5 bg-[#f5f5dc] p-6 rounded-2xl shadow-xl z-30 flex flex-col items-center">
-            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=200" alt="Produk" className="w-24 h-32 object-contain mb-2" />
+            <Image
+              src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=200"
+              alt="Produk"
+              width={200}
+              height={200}
+              className="w-24 h-32 object-contain mb-2"
+            />
             <span className="font-bold text-gray-800">$89</span>
           </div>
 

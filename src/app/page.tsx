@@ -51,7 +51,7 @@ export default function HomePage() {
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Analytics</h3>
-              <p className="text-gray-600">Track clicks and see what's working.</p>
+              <p className="text-gray-600">Track clicks and see what&apos;s working.</p>
             </div>
 
             <div className="p-6">

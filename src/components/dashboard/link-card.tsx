@@ -18,7 +18,7 @@ interface LinkCardProps {
   onToggle: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  dragHandleProps?: any;
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
 }
 
 export function LinkCard({ link, onToggle, onEdit, onDelete, dragHandleProps }: LinkCardProps) {
@@ -38,7 +38,7 @@ export function LinkCard({ link, onToggle, onEdit, onDelete, dragHandleProps }: 
             <Pencil size={14} className="text-gray-400 cursor-pointer" onClick={onEdit} />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-gray-500 text-sm underline cursor-pointer truncate max-w-[200px]">
+            <span className="text-gray-500 text-sm underline cursor-pointer truncate max-w-50">
               {link.url}
             </span>
             <Pencil size={14} className="text-gray-400 cursor-pointer" onClick={onEdit} />
@@ -55,7 +55,7 @@ export function LinkCard({ link, onToggle, onEdit, onDelete, dragHandleProps }: 
           <div className="flex items-center gap-2">
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" className="sr-only peer" checked={link.active} onChange={onToggle} />
-              <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
+              <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
             </label>
           </div>
           <Trash2

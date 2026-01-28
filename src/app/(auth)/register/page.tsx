@@ -29,8 +29,8 @@ export default function RegisterPage() {
         { successMessage: 'Account created successfully!' }
       );
       router.push('/login?registered=true');
-    } catch (err: any) {
-      setError(err.message || 'Registration failed');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
     }
   }
 

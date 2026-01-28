@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
@@ -14,31 +14,24 @@ interface LinkFormProps {
 }
 
 export function LinkForm({ isOpen, onClose, onSubmit, initialData, isLoading }: LinkFormProps) {
-  const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [url, setUrl] = useState(initialData?.url || '');
 
-  useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title);
-      setUrl(initialData.url);
-    } else {
-      setTitle('');
-      setUrl('');
-    }
-  }, [initialData, isOpen]);
-
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    await onSubmit({ title, url });
-    if (!initialData) {
-      setTitle('');
-      setUrl('');
-    }
+    void onSubmit({ title, url });
   }
+
+  // When modal closes, parent component will unmount/remount this component
+  // So we don't need to manually reset state
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={initialData ? 'Edit Link' : 'Add New Link'}>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        key={initialData?.title || 'new'}
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700">
             Title
