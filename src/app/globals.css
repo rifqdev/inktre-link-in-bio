@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #F3F3F1;
+  --color-foreground: #1D2026;
+  --color-primary: #8129D9;
+  --color-primary-hover: #6a21b3;
+  --color-primary-foreground: white;
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #0f172a;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #0f172a;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: white;
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #8129D9;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--color-border));
+  }
+
+  body {
+    background-color: hsl(var(--color-background));
+    color: hsl(var(--color-foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom colors for Auth pages */
+.bg-custom-blue {
+  background-color: #1e4fcd;
+}
+
+.bg-custom-lime {
+  background-color: #d2e823;
+}
+
+/* Drag and Drop Styles */
+.draggable-source {
+  opacity: 0.5;
+}
+
+.draggable-over {
+  border: 2px dashed #8129D9;
+}
+
+/* Smooth transitions for sortable items */
+[data-dnd-kit-sortable] {
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+
+/* Drag overlay styling */
+[data-dnd-kit-dragging] {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+/* Drag handle styling */
+[data-dnd-kit-handle] {
+  cursor: grab;
+}
+
+[data-dnd-kit-handle]:active {
+  cursor: grabbing;
+}
+
+/* Card shadow for links */
+.card-shadow {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Link button hover effect */
+.link-button:hover {
+  transform: scale(1.02);
+  transition: transform 0.2s ease;
+}
