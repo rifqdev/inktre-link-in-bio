@@ -2,6 +2,24 @@
 
 A modern platform to manage and share your important links in one place.
 
+![Inktre Screenshot](./docs/image.png)
+
+
+### Demo Video
+
+<video src="https://github.com/rifqdev/inktre-link-in-bio/raw/main/docs/demo.mov" controls width="600" height="400"></video>
+
+## Tech Stack
+
+![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![NextAuth](https://img.shields.io/badge/NextAuth.js-5.0-000000?style=for-the-badge&logo=nextauth&logoColor=white)
+![dnd-kit](https://img.shields.io/badge/%40dnd--kit-core-FF4D4D?style=for-the-badge&logo=react&logoColor=white)
+
 ## Table of Contents
 
 - [Setup Instructions](#setup-instructions)
