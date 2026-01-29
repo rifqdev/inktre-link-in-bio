@@ -24,7 +24,7 @@ export async function updateProfile(data: UpdateProfileInput): Promise<UserWithT
 // Get public profile by slug (includes links)
 // Note: API returns user object with links included, not wrapped in { user, links }
 export async function getProfileBySlug(slug: string): Promise<UserWithTimestamps & { links: LinkWithTimestamps[] }> {
-  return api.get<any>(API_ENDPOINTS.profileBySlug(slug));
+  return api.get<UserWithTimestamps & { links: LinkWithTimestamps[] }>(API_ENDPOINTS.profileBySlug(slug));
 }
 
 // Profile service object

@@ -16,7 +16,8 @@ interface UseApiQueryReturn<T> {
 
 export function useApiQuery<T>(
   queryFn: () => Promise<T>,
-  deps: unknown[] = []
+  deps: unknown[] = [],
+  skip: boolean = false
 ): UseApiQueryReturn<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,6 +25,11 @@ export function useApiQuery<T>(
   const isInitialLoad = useRef(true);
 
   const fetchData = useCallback(async () => {
+    if (skip) {
+      setLoading(false);
+      return;
+    }
+
     try {
       // Only set loading to true on initial load
       if (isInitialLoad.current) {
@@ -40,7 +46,7 @@ export function useApiQuery<T>(
       isInitialLoad.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [...deps, skip]);
 
   useEffect(() => {
     fetchData();

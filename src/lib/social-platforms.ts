@@ -1,9 +1,10 @@
 import { Instagram, Twitter, Facebook, Linkedin, Music2, Youtube } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 export interface SocialPlatform {
   id: string;
   name: string;
-  icon: any;
+  icon: LucideIcon;
   urlPattern: RegExp;
   placeholder: string;
   baseUrl: string;

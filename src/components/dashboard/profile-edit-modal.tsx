@@ -52,8 +52,8 @@ export function ProfileEditModal({
     try {
       await onSubmit({ name: name.trim(), bio: bio.trim() || undefined });
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Failed to update profile');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
       setLoading(false);
     }

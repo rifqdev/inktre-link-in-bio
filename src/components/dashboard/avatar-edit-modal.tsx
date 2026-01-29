@@ -69,8 +69,8 @@ export function AvatarEditModal({
     try {
       await onSubmit(avatarUrl.trim());
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Failed to update avatar');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update avatar');
     } finally {
       setLoading(false);
     }

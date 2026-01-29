@@ -17,8 +17,16 @@ const eslintConfig = defineConfig([
     rules: {
       // Disallow all console statements (console.log, console.error, etc.)
       'no-console': ['error', { allow: ['warn', 'error'] }],
-      // Allow 'any' type selectively (it's sometimes necessary in complex scenarios)
-      '@typescript-eslint/no-explicit-any': 'off',
+      // DISALLOW 'any' type - enforce type safety
+      '@typescript-eslint/no-explicit-any': 'error',
+      // Additional type safety rules
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      }],
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'warn',
     },
   },
 ]);

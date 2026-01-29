@@ -9,13 +9,13 @@ interface LinkFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: { title: string; url: string }) => Promise<void>;
-  initialData?: { title: string; url: string };
+  initialData?: { title: string; url: string } | undefined;
   isLoading?: boolean;
 }
 
 export function LinkForm({ isOpen, onClose, onSubmit, initialData, isLoading }: LinkFormProps) {
-  const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
+  const [title, setTitle] = useState(initialData?.title ?? '');
+  const [url, setUrl] = useState(initialData?.url ?? '');
 
   // Sync form state with initialData when it changes
   useEffect(() => {
@@ -26,6 +26,7 @@ export function LinkForm({ isOpen, onClose, onSubmit, initialData, isLoading }: 
       setTitle('');
       setUrl('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData]);
 
   function handleSubmit(e: React.FormEvent) {

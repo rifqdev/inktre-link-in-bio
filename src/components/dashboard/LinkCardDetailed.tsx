@@ -12,7 +12,7 @@ interface LinkCardDetailedProps {
   onToggle: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  dragHandleProps?: any;
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
 }
 
 export function LinkCardDetailed({ link, onToggle, onEdit, onDelete, dragHandleProps }: LinkCardDetailedProps) {

@@ -11,6 +11,7 @@ import { MobileBottomNavigation } from '@/components/dashboard/MobileBottomNavig
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { profileService } from '@/services/profile.service';
 import { useApiQuery } from '@/hooks';
+import type { UserWithTimestamps } from '@/lib/api/types';
 
 export default function DashboardLayout({
   children,
@@ -27,8 +28,8 @@ export default function DashboardLayout({
     []
   );
 
-  // Get slug from profile (more reliable than session)
-  const slug = (userProfile as any)?.slug;
+  // Get slug from session first (faster), fallback to profile data
+  const slug = session?.user?.slug || (userProfile as UserWithTimestamps | null)?.slug;
 
   // Detect if we're on mobile/tablet (< 1024px)
   const isMobileOrTablet = useMediaQuery('(max-width: 1024px)');
@@ -48,10 +49,10 @@ export default function DashboardLayout({
     };
 
     // Listen for custom event from page
-    window.addEventListener('preview-update', handlePreviewUpdate);
+    window.addEventListener('preview-data-update', handlePreviewUpdate);
 
     return () => {
-      window.removeEventListener('preview-update', handlePreviewUpdate);
+      window.removeEventListener('preview-data-update', handlePreviewUpdate);
     };
   }, []);
 

@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     if (!linkType || linkType === 'regular') {
       const detectedPlatform = getPlatformFromUrl(url);
       if (detectedPlatform) {
-        linkType = detectedPlatform.id as any;
+        linkType = detectedPlatform.id as 'instagram' | 'twitter' | 'facebook' | 'linkedin' | 'tiktok' | 'youtube';
         linkIcon = detectedPlatform.id;
       }
     }

@@ -4,6 +4,9 @@ import { compare } from 'bcryptjs';
 import { prisma } from './prisma';
 import { loginSchema } from './validations';
 import { authConfig } from './auth.config';
+import type { User } from '@/types/dashboard';
+import type { JWT } from 'next-auth/jwt';
+import type { Session } from 'next-auth';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -41,19 +44,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           slug: user.slug,
-        } as any;
+        };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }: any) {
+    async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.id = user.id;
         token.slug = user.slug;
       }
       return token;
     },
-    async session({ session, token }: any) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.slug = token.slug as string;

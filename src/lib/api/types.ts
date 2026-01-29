@@ -44,6 +44,11 @@ export interface UserWithTimestamps extends User {
   updatedAt: string;
 }
 
+// User with links (for public profile)
+export interface UserWithLinks extends UserWithTimestamps {
+  links: LinkWithTimestamps[];
+}
+
 // Click tracking data
 export interface ClickData {
   linkId: string;
@@ -62,4 +67,12 @@ export interface PublicProfileResponse {
 export interface ReorderLinkItem {
   id: string;
   order: number;
+}
+
+// Social platform
+export interface SocialPlatform {
+  id: string;
+  name: string;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
+  pattern: RegExp;
 }

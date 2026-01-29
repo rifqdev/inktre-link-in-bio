@@ -13,12 +13,16 @@ import { AvatarEditModal } from '@/components/dashboard/avatar-edit-modal';
 import { MobileDashboardHeader } from '@/components/dashboard/MobileDashboardHeader';
 import { DashboardCard } from '@/components/dashboard/DashboardCard';
 import { MiniPreview } from '@/components/dashboard/MiniPreview';
+import { DashboardSkeleton } from '@/components/dashboard/dashboard-skeleton';
 import Image from 'next/image';
 import { Link } from '@/types/dashboard';
+import { UserWithTimestamps } from '@/lib/api/types';
+import { LinkWithTimestamps } from '@/lib/api/types';
 import { linksService } from '@/services/links.service';
 import { profileService } from '@/services/profile.service';
 import { useApiQuery, useApi } from '@/hooks';
 import type { CreateLinkInput, UpdateLinkInput } from '@/lib/api/types';
+import type { DragEndEvent } from '@dnd-kit/core';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -29,12 +33,12 @@ export default function DashboardPage() {
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
   // Fetch links and profile using useApiQuery
-  const { data: links = [], loading: linksLoading, refetch: refetchLinks } = useApiQuery(
+  const { data: links = [], loading: linksLoading, refetch: refetchLinks } = useApiQuery<LinkWithTimestamps[]>(
     () => linksService.getLinks(),
     [status]
   );
 
-  const { data: user = null, loading: userLoading, refetch: refetchProfile } = useApiQuery(
+  const { data: user = null, loading: userLoading, refetch: refetchProfile } = useApiQuery<UserWithTimestamps>(
     () => profileService.getProfile(),
     [status]
   );
@@ -61,8 +65,38 @@ export default function DashboardPage() {
     }
   }, [status, router]);
 
+  // Refresh preview when user or links data changes
+  // Only send data if we have both user and links AND slug is available
+  useEffect(() => {
+    if (user && links && user.slug) {
+      const previewData = {
+        user: {
+          name: user.name || 'User',
+          avatar: user.avatar || null,
+          bio: user.bio || null,
+          themeColor: user.themeColor || null,
+        },
+        links: links || [],
+      };
+      window.dispatchEvent(new CustomEvent('preview-data-update', { detail: previewData }));
+    }
+    // Only run when user or links actually change
+  }, [user, links]);
+
   function refreshPreview() {
-    window.dispatchEvent(new CustomEvent('preview-update'));
+    // Send preview data directly to avoid refetching
+    if (!user || !links || !user.slug) return;
+
+    const previewData = {
+      user: {
+        name: user.name || 'User',
+        avatar: user.avatar || null,
+        bio: user.bio || null,
+        themeColor: user.themeColor || null,
+      },
+      links: links || [],
+    };
+    window.dispatchEvent(new CustomEvent('preview-data-update', { detail: previewData }));
   }
 
   async function handleCreateLink(data: { title: string; url: string }) {
@@ -107,12 +141,12 @@ export default function DashboardPage() {
     refreshPreview();
   }
 
-  async function handleDragEnd(event: any) {
+  async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
     if (over && active.id !== over.id && links) {
-      const oldIndex = links.findIndex((item) => (item as any).id === active.id);
-      const newIndex = links.findIndex((item) => (item as any).id === over.id);
+      const oldIndex = links.findIndex((item) => item.id === active.id);
+      const newIndex = links.findIndex((item) => item.id === over.id);
 
       const newLinks = arrayMove(links, oldIndex, newIndex).map((link, index) => ({
         ...link,
@@ -122,7 +156,7 @@ export default function DashboardPage() {
       try {
         await reorderLinksMutation(() =>
           linksService.reorderLinks({
-            links: newLinks.map((link) => ({ id: (link as any).id, order: link.order })),
+            links: newLinks.map((link) => ({ id: link.id, order: link.order })),
           })
         );
         // Optimistically update UI
@@ -165,11 +199,7 @@ export default function DashboardPage() {
   const loading = linksLoading || userLoading;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -177,15 +207,15 @@ export default function DashboardPage() {
       {/* Mobile View */}
       <div className="min-h-screen lg:pb-0 lg:hidden">
         {/* Mobile Header */}
-        <MobileDashboardHeader user={(user as any) || { name: session?.user?.name || 'User', id: '', email: '', slug: '' }} />
+        <MobileDashboardHeader user={user || { name: session?.user?.name || 'User', id: '', email: '', slug: '' }} />
 
         {/* Main Content */}
         <main className="px-4 mt-2">
           <h1 className="text-3xl font-bold text-gray-900">
-            {(user as any)?.name || session?.user?.name || 'User'}
+            {user?.name || session?.user?.name || 'User'}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            linktr.ee/{(user as any)?.slug || 'username'}
+            linktr.ee/{user?.slug || 'username'}
           </p>
 
           {/* Grid Content */}
@@ -195,7 +225,7 @@ export default function DashboardPage() {
               onClick={() => router.push('/dashboard/links')}
               icon={<Lightbulb size={10} className="text-yellow-500" />}
             >
-              <MiniPreview user={(user as any) || { name: session?.user?.name || 'User', id: '', email: '', slug: '' }} links={(links as any) || []} />
+              <MiniPreview user={user || { name: session?.user?.name || 'User', id: '', email: '', slug: '' }} links={links || []} />
               <div className="flex justify-start items-center mt-2 px-1">
                 <span className="font-bold text-gray-800">Links</span>
               </div>
@@ -214,9 +244,9 @@ export default function DashboardPage() {
           >
             <span className="sr-only">Edit Avatar</span>
             <span className="w-full" aria-hidden="true">
-              {(user as any)?.avatar ? (
+              {user?.avatar ? (
                 <Image
-                  src={(user as any).avatar}
+                  src={user.avatar}
                   alt="Profile Avatar"
                   width={64}
                   height={64}
@@ -224,7 +254,7 @@ export default function DashboardPage() {
                 />
               ) : (
                 <div className="w-16 h-16 rounded-full bg-linear-to-br from-[#8129D9] to-purple-600 flex items-center justify-center text-white text-2xl font-bold border border-solid border-gray-200 cursor-pointer hover:brightness-90 transition-all">
-                  {(user as any)?.name?.charAt(0).toUpperCase() || 'R'}
+                  {user?.name?.charAt(0).toUpperCase() || 'R'}
                 </div>
               )}
             </span>
@@ -238,14 +268,14 @@ export default function DashboardPage() {
                     onClick={() => user && setIsProfileModalOpen(true)}
                     className="text-black! leading-heading! cursor-pointer text-ellipsis break-normal whitespace-nowrap inline-block! overflow-hidden font-medium! max-w-fit text-body-base focus-visible:outline focus-visible:outline-black focus-visible:outline-offset-2 hover:underline bg-transparent border-0 p-0"
                   >
-                    {(user as any)?.name || 'rifqi'}
+                    {user?.name || 'rifqi'}
                   </button>
                 </div>
                 <button
                   onClick={() => user && setIsProfileModalOpen(true)}
                   className="text-left text-gray-600 text-sm hover:text-gray-900 transition-colors cursor-pointer bg-transparent border-0 p-0"
                 >
-                  {(user as any)?.bio || 'Add a bio...'}
+                  {user?.bio || 'Add a bio...'}
                 </button>
               </div>
             </div>
@@ -268,14 +298,14 @@ export default function DashboardPage() {
             </div>
           ) : (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={links.map((l) => (l as any).id)} strategy={verticalListSortingStrategy}>
+              <SortableContext items={links.map((l) => l.id)} strategy={verticalListSortingStrategy}>
                 {links.map((link) => (
                   <SortableLinkCard
-                    key={(link as any).id}
-                    link={link as any}
-                    onToggle={() => handleToggleLink((link as any).id)}
-                    onEdit={() => openEditModal(link as any)}
-                    onDelete={() => handleDeleteLink((link as any).id)}
+                    key={link.id}
+                    link={link}
+                    onToggle={() => handleToggleLink(link.id)}
+                    onEdit={() => openEditModal(link)}
+                    onDelete={() => handleDeleteLink(link.id)}
                   />
                 ))}
               </SortableContext>
@@ -300,15 +330,15 @@ export default function DashboardPage() {
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
         onSubmit={handleUpdateProfile}
-        initialData={{ name: (user as any)?.name || '', bio: (user as any)?.bio }}
+        initialData={{ name: user?.name || '', bio: user?.bio ?? undefined }}
       />
 
       <AvatarEditModal
         isOpen={isAvatarModalOpen}
         onClose={() => setIsAvatarModalOpen(false)}
         onSubmit={handleUpdateAvatar}
-        currentAvatar={(user as any)?.avatar}
-        currentName={(user as any)?.name || 'User'}
+        currentAvatar={user?.avatar ?? undefined}
+        currentName={user?.name || 'User'}
       />
     </>
   );
