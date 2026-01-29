@@ -7,7 +7,7 @@ A modern platform to manage and share your important links in one place.
 
 ### Demo Video
 
-<video src="https://github.com/rifqdev/inktre-link-in-bio/raw/main/docs/demo.mov" controls width="600" height="400"></video>
+![Demo GIF](./docs/demo.gif)
 
 ## Tech Stack
 
